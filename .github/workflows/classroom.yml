@@ -1,7 +1,9 @@
 name: Autograding Tests
+
 'on':
-- workflow_dispatch
-- repository_dispatch
+  - workflow_dispatch
+  - repository_dispatch
+
 permissions:
   checks: write
   actions: read
@@ -39,11 +41,26 @@ jobs:
     - name: Start frontend server
       run: |
         npm install -g @angular/cli
-        ng serve --port 4200 --configuration=test &
-        sleep 30 # Wait for the Angular server to start
+        ng serve --port 4401 --configuration=test &
+        sleep 60 # Increase sleep time to ensure the server starts
       working-directory: ./frontend
 
-    # Backend tests
+    # Frontend tests
+    - name: Run Frontend Tests
+      run: |
+        npm install
+        npm install forever
+        export NODE_ENV=test
+        forever start --minUptime 30000 ../backend/index.js
+        forever start --minUptime 30000 node_modules/@angular/cli/bin/ng serve --port 4401 --configuration=test
+        sleep 60 # Increased sleep to ensure servers are up
+        until $(curl --output /dev/null --silent --head --fail http://localhost:4401); do
+          echo "Waiting for the frontend server to be ready..."
+          sleep 5
+        done
+        testcafe chrome:headless ./test/teacher-add.test.js
+        forever stopall
+      working-directory: ./frontend
     - name: Backend List Teachers
       id: backend-list-teachers
       uses: classroom-resources/autograding-command-grader@v1
@@ -132,7 +149,6 @@ jobs:
         max-score: 10
       working-directory: ./backend
 
-    # Frontend tests
     - name: Dummy Test
       id: dummy-test
       uses: classroom-resources/autograding-command-grader@v1
