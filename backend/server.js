@@ -1,4 +1,5 @@
 const express = require ("express");
+const cors = require("cors");
 
 const {
   readTeachers,
@@ -15,7 +16,9 @@ const {
 } = require ("./database.js");
 
 const app = express();
+
 const bodyParser = require  ("body-parser");
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
@@ -40,6 +43,7 @@ app.post("/getTeacherInfo", async function (req, res) {
   let reqBody = req.body;
   console.log("Request received to get Teacher Info");
   let data = await readTeacherInfo(reqBody.id);
+  console.log(reqBody.id);
 
   res.setHeader("Content-Type", "application/json");
   res.end(JSON.stringify(data));
