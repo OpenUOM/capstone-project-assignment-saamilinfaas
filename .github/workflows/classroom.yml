@@ -59,7 +59,7 @@ jobs:
       - name: Backend List Students
         id: backend-list-students
         uses: classroom-resources/autograding-command-grader@v1
-          with:
+        with:
             test-name: Backend List Students
             setup-command: npm install
             command: npm test -- -t "GET /listStudents should show all students"
